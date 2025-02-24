@@ -13,7 +13,7 @@ public class MoveChar : MonoBehaviour
 
     private void Awake()
     {
-        moveSpeed = 5.0f;
+        moveSpeed = 2.0f;
 
         if (!TryGetComponent<Animator>(out animator))
         {
@@ -22,9 +22,9 @@ public class MoveChar : MonoBehaviour
     }
     private void Update()
     {
-        moveDir.x = Input.GetAxis("Horizontal");
+        moveDir.x = Input.GetAxisRaw("Horizontal");
         moveDir.y = 0.0f;
-        moveDir.z = Input.GetAxis("Vertical");
+        moveDir.z = Input.GetAxisRaw("Vertical");
 
         camForward = mainCam.transform.forward;
         camForward.y = 0;
@@ -40,8 +40,9 @@ public class MoveChar : MonoBehaviour
         if (moveDir != Vector3.zero)
         {
             transform.forward = moveDir;
-            animator.SetBool("IsWalk", true);
         }
+        animator.SetBool("IsWalk", moveDir != Vector3.zero);
+
         transform.position += moveDir * moveSpeed * Time.deltaTime;
     }
 }
