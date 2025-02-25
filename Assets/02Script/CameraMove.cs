@@ -7,7 +7,7 @@ public class CameraMove : MonoBehaviour
 {
     [SerializeField] private float sensitivity;
     [SerializeField] private Transform player;
-    [SerializeField] private Camera cam;
+
     private Vector3 offset;
     private float rotX;
     private float rotY;
@@ -16,8 +16,7 @@ public class CameraMove : MonoBehaviour
     {
         sensitivity = 400.0f;
         offset = new Vector3(0.5f, 1.5f, -1.5f);
-        transform.rotation = Quaternion.identity;
-        cam.transform.position = offset;
+        transform.forward = new Vector3(0.0f, 0.0f, 1.0f);
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
@@ -27,8 +26,9 @@ public class CameraMove : MonoBehaviour
     {
         rotX += Input.GetAxis("Mouse X") * sensitivity * Time.deltaTime;
         rotY += Input.GetAxis("Mouse Y") * sensitivity * Time.deltaTime;
-        rotY = Mathf.Clamp(rotY, -30.0f, 60.0f);
+        rotY = Mathf.Clamp(rotY, -15.0f, 20.0f);
 
         transform.rotation = Quaternion.Euler(-rotY, rotX, 0.0f);
+        transform.position = player.position + transform.rotation * offset;
     }
 }

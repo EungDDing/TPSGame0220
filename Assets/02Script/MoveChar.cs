@@ -11,9 +11,19 @@ public class MoveChar : MonoBehaviour
     private Vector3 moveDir;
     private float moveSpeed;
 
+    private bool isRun;
+    private bool isWalk;
+    private bool isMove;
+    private bool isAim;
+
     private void Awake()
     {
-        moveSpeed = 2.0f;
+        isRun = false;
+        isWalk = false;
+        isMove = false;
+        isAim = false;
+        
+        moveSpeed = 0.0f;
 
         if (!TryGetComponent<Animator>(out animator))
         {
@@ -22,6 +32,29 @@ public class MoveChar : MonoBehaviour
     }
     private void Update()
     {
+        if (Input.GetKey(KeyCode.LeftShift) && isMove == true)
+        {
+            isWalk = false;
+            isRun = true;
+        }
+        else
+        {
+            isRun = false;
+        }
+
+        if (isWalk)
+        {
+            moveSpeed = 1.8f;
+        }
+        else if (isRun)
+        {
+            moveSpeed = 5.0f;
+        }
+        else
+        {
+            moveSpeed = 0.0f;
+        }
+
         moveDir.x = Input.GetAxisRaw("Horizontal");
         moveDir.y = 0.0f;
         moveDir.z = Input.GetAxisRaw("Vertical");
@@ -41,8 +74,12 @@ public class MoveChar : MonoBehaviour
         {
             transform.forward = moveDir;
         }
-        animator.SetBool("IsWalk", moveDir != Vector3.zero);
 
+        isMove = (moveDir != Vector3.zero);
+        isWalk = (moveDir != Vector3.zero);
+
+        animator.SetFloat("Speed", moveSpeed);
+        
         transform.position += moveDir * moveSpeed * Time.deltaTime;
     }
 }
