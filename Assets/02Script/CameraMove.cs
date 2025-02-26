@@ -7,12 +7,12 @@ public class CameraMove : MonoBehaviour
 {
     [SerializeField] private float sensitivity;
     [SerializeField] private Transform player;
-
+    private ShootBullet shootBullet;
     private Vector3 offset;
     private float rotX;
     private float rotY;
 
-    private void Start()
+    private void Awake()
     {
         sensitivity = 400.0f;
         offset = new Vector3(0.5f, 1.5f, -1.5f);
@@ -20,6 +20,13 @@ public class CameraMove : MonoBehaviour
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+
+        if (!player.TryGetComponent<ShootBullet>(out shootBullet))
+        {
+            Debug.Log("CameraMove.cs TryGetComponent<ShootBullet> failed");
+        }
+
+        shootBullet.OnAimingChange += AimCamera;
     }
 
     private void Update()
@@ -30,5 +37,11 @@ public class CameraMove : MonoBehaviour
 
         transform.rotation = Quaternion.Euler(-rotY, rotX, 0.0f);
         transform.position = player.position + transform.rotation * offset;
+    }
+
+    public void AimCamera(bool newAimingState)
+    {
+        Debug.Log("조준중 offset 조정");
+        
     }
 }

@@ -6,55 +6,42 @@ public class MoveChar : MonoBehaviour
 {
     [SerializeField] private Camera mainCam;
     private Animator animator;
+    private ShootBullet shootBullet;
     private Vector3 camForward;
     private Vector3 camRight;
     private Vector3 moveDir;
-    private float moveSpeed;
+    [SerializeField]  private float moveSpeed;
 
     private bool isRun;
-    private bool isWalk;
     private bool isMove;
-    private bool isAim;
+    private bool isAiming;
+
+    public float MoveSpeed
+    {
+        get => moveSpeed;
+    }
 
     private void Awake()
     {
+        isAiming = false;
         isRun = false;
-        isWalk = false;
         isMove = false;
-        isAim = false;
         
         moveSpeed = 0.0f;
 
         if (!TryGetComponent<Animator>(out animator))
         {
-            Debug.Log("MoveChar.cs failed");
+            Debug.Log("MoveChar.cs TryGetComponent<Animator> failed");
         }
+        if (!TryGetComponent<ShootBullet>(out shootBullet))
+        {
+            Debug.Log("MoveChar.cs TryGetComponent<ShootBullet> failed");
+        }
+
+        shootBullet.OnAimingChange += AimMove;
     }
     private void Update()
     {
-        if (Input.GetKey(KeyCode.LeftShift) && isMove == true)
-        {
-            isWalk = false;
-            isRun = true;
-        }
-        else
-        {
-            isRun = false;
-        }
-
-        if (isWalk)
-        {
-            moveSpeed = 1.8f;
-        }
-        else if (isRun)
-        {
-            moveSpeed = 5.0f;
-        }
-        else
-        {
-            moveSpeed = 0.0f;
-        }
-
         moveDir.x = Input.GetAxisRaw("Horizontal");
         moveDir.y = 0.0f;
         moveDir.z = Input.GetAxisRaw("Vertical");
@@ -70,16 +57,22 @@ public class MoveChar : MonoBehaviour
         moveDir = moveDir.z * camForward + moveDir.x * camRight;
         moveDir.Normalize();
 
-        if (moveDir != Vector3.zero)
+        isMove = (moveDir != Vector3.zero);
+        isRun = isMove && Input.GetKey(KeyCode.LeftShift);
+
+        moveSpeed = isAiming ? 0.8f : (isRun ? 5.0f : (isMove ? 1.8f : 0.0f));
+
+        if (isMove)
         {
             transform.forward = moveDir;
+            transform.position += moveDir * moveSpeed * Time.deltaTime;
         }
 
-        isMove = (moveDir != Vector3.zero);
-        isWalk = (moveDir != Vector3.zero);
-
         animator.SetFloat("Speed", moveSpeed);
-        
-        transform.position += moveDir * moveSpeed * Time.deltaTime;
+    }
+    public void AimMove(bool newAimingState)
+    {
+        isAiming = newAimingState;
+        Debug.Log(isAiming);
     }
 }

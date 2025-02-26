@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 public class ShootBullet : MonoBehaviour
@@ -9,6 +11,10 @@ public class ShootBullet : MonoBehaviour
     private Vector3 spawnPoint;
     private Ray ray;
     private Vector3 offset;
+
+    public Action<bool> OnAimingChange;
+    private bool isAiming;
+
     private void Awake()
     {
         offset = Vector3.zero;
@@ -17,17 +23,24 @@ public class ShootBullet : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetMouseButtonDown(0))
+        bool newAimingState = Input.GetMouseButton(1);
+
+        if (newAimingState != isAiming)
+        {
+            isAiming = newAimingState;
+            OnAimingChange?.Invoke(isAiming);
+        } 
+
+        if (isAiming && Input.GetMouseButtonDown(0))
         {
             CreateSphere();
-            transform.forward = new Vector3(ray.direction.x, 0.0f, ray.direction.z);
         }
     }
 
     public void CreateSphere()
     {
-        offset.x = Random.Range(-0.05f, 0.05f);
-        offset.y = Random.Range(-0.05f, 0.05f);
+        offset.x = UnityEngine.Random.Range(-0.05f, 0.05f);
+        offset.y = UnityEngine.Random.Range(-0.05f, 0.05f);
 
         ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;

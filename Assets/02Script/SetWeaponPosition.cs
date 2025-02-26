@@ -4,12 +4,12 @@ using UnityEngine;
 
 public class SetWeaponPosition : MonoBehaviour
 {
-    private Animator animator;
+    private MoveChar moveChar;
     private GameObject player;
     private void Awake()
     {
         player = GameObject.FindWithTag("Player");
-        if (!player.TryGetComponent<Animator>(out animator))
+        if (!player.TryGetComponent<MoveChar>(out moveChar))
         {
             Debug.Log("SetWeaponPosition() - Awake() failed");
         }
@@ -19,7 +19,8 @@ public class SetWeaponPosition : MonoBehaviour
     }
     private void Update()
     {
-        if (animator.GetBool("IsWalk"))
+        Debug.Log(moveChar.MoveSpeed);
+        if (moveChar.MoveSpeed == 2.0f)
         {
             transform.localPosition = new Vector3(0.00024f, 0.00075f, -0.00033f);
             transform.localRotation = Quaternion.Euler(new Vector3(3.762f, 27.961f, -61.571f));
