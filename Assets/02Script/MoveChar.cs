@@ -10,7 +10,9 @@ public class MoveChar : MonoBehaviour
     private Vector3 camForward;
     private Vector3 camRight;
     private Vector3 moveDir;
-    [SerializeField]  private float moveSpeed;
+    private Vector3 playerForward; 
+    private Ray ray;
+    [SerializeField] private float moveSpeed;
 
     private bool isRun;
     private bool isMove;
@@ -42,6 +44,10 @@ public class MoveChar : MonoBehaviour
     }
     private void Update()
     {
+        ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        playerForward = ray.direction;
+        playerForward.y = 0.0f; 
+
         moveDir.x = Input.GetAxisRaw("Horizontal");
         moveDir.y = 0.0f;
         moveDir.z = Input.GetAxisRaw("Vertical");
@@ -61,18 +67,24 @@ public class MoveChar : MonoBehaviour
         isRun = isMove && Input.GetKey(KeyCode.LeftShift);
 
         moveSpeed = isAiming ? 0.8f : (isRun ? 5.0f : (isMove ? 1.8f : 0.0f));
-
+ 
         if (isMove)
         {
-            transform.forward = moveDir;
-            transform.position += moveDir * moveSpeed * Time.deltaTime;
+            playerForward = moveDir;
+            transform.forward = playerForward;
         }
+
+        if (isAiming)
+        {
+            transform.forward = playerForward;
+        }
+
+        transform.position += moveDir * moveSpeed * Time.deltaTime;
 
         animator.SetFloat("Speed", moveSpeed);
     }
     public void AimMove(bool newAimingState)
     {
         isAiming = newAimingState;
-        Debug.Log(isAiming);
     }
 }

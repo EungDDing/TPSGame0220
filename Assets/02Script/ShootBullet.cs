@@ -13,6 +13,7 @@ public class ShootBullet : MonoBehaviour
     private Vector3 offset;
 
     public Action<bool> OnAimingChange;
+
     private bool isAiming;
 
     private void Awake()
