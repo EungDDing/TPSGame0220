@@ -15,10 +15,12 @@ public class PlayerManager : MonoBehaviour
     [SerializeField] private float moveSpeed;
     [SerializeField] private GameObject aimObject;
     [SerializeField] private float aimDistance;
-
+    
     private bool isRun;
     private bool isMove;
-    private bool isAiming;
+    private bool isAimingMove;
+    private bool isAim;
+    private bool isReload;
 
     public delegate void IsAimingChange(bool isAiming);
     public event IsAimingChange OnAimingChange;
@@ -30,9 +32,11 @@ public class PlayerManager : MonoBehaviour
 
     private void Awake()
     {
-        isAiming = false;
+        isAimingMove = false;
         isRun = false;
         isMove = false;
+        isAim = false;
+        isReload = false;
 
         aimDistance = 20.0f;
         moveSpeed = 0.0f;
@@ -43,6 +47,76 @@ public class PlayerManager : MonoBehaviour
         }
     }
     private void Update()
+    {
+        PlayerMove();
+        isRun = isMove && Input.GetKey(KeyCode.LeftShift);
+        isAimingMove = isMove && Input.GetMouseButton(1);
+
+        moveSpeed = isAimingMove ? 0.8f : (isRun ? 5.0f : (isMove ? 1.8f : 0.0f));
+
+        bool newAimState = Input.GetMouseButton(1) && (!isReload);
+
+
+        if (newAimState != isAim)
+        {
+            isAim = newAimState;
+            OnAimingChange?.Invoke(isAim);
+        }
+        
+        
+            if (isMove)
+            {
+                playerForward = moveDir;
+                transform.forward = playerForward;
+            }
+
+
+            if (isAim)
+            {
+                animator.SetLayerWeight(1, 1);
+
+                Vector3 targetPos = Vector3.zero;
+                Transform camTransform = mainCam.transform;
+                RaycastHit hit;
+
+                if (Physics.Raycast(camTransform.position, camTransform.forward, out hit, Mathf.Infinity))
+                {
+                    targetPos = hit.point;
+                    aimObject.transform.position = hit.point;
+                }
+                else
+                {
+                    targetPos = camTransform.position + camTransform.forward * aimDistance;
+                    aimObject.transform.position = camTransform.position + camTransform.forward * aimDistance;
+                }
+
+                Vector3 targetAim = targetPos;
+                targetAim.y = transform.position.y;
+                Vector3 aimDir = (targetAim - transform.position).normalized;
+
+                transform.forward = aimDir;
+
+                if (Input.GetMouseButton(0))
+                {
+                    animator.SetBool("Fire", true);
+                }
+                else
+                {
+                    animator.SetBool("Fire", false);
+                }
+            }
+            else
+            {
+                animator.SetLayerWeight(1, 0);
+            }
+        
+
+        transform.position += moveDir * moveSpeed * Time.deltaTime;
+
+        animator.SetFloat("Speed", moveSpeed);
+    }
+
+    private void PlayerMove()
     {
         moveDir.x = Input.GetAxisRaw("Horizontal");
         moveDir.y = 0.0f;
@@ -60,50 +134,5 @@ public class PlayerManager : MonoBehaviour
         moveDir.Normalize();
 
         isMove = (moveDir != Vector3.zero);
-        isRun = isMove && Input.GetKey(KeyCode.LeftShift);
-
-        moveSpeed = isAiming ? 0.8f : (isRun ? 5.0f : (isMove ? 1.8f : 0.0f));
-
-        bool newAimingState = Input.GetMouseButton(1);
-
-        if (newAimingState != isAiming)
-        {
-            isAiming = newAimingState;
-            OnAimingChange?.Invoke(isAiming);
-        }
-        
-        if (isMove)
-        {
-            playerForward = moveDir;
-            transform.forward = playerForward;
-        }
-
-        if (isAiming)
-        {
-            Vector3 targetPos = Vector3.zero;
-            Transform camTransform = mainCam.transform;
-            RaycastHit hit;
-
-            if (Physics.Raycast(camTransform.position, camTransform.forward, out hit, Mathf.Infinity))
-            {
-                targetPos = hit.point;
-                aimObject.transform.position = hit.point;
-            }
-            else
-            {
-                targetPos = camTransform.position + camTransform.forward * aimDistance;
-                aimObject.transform.position = camTransform.position + camTransform.forward * aimDistance;
-            }
-
-            Vector3 targetAim = targetPos;
-            targetAim.y = transform.position.y;
-            Vector3 aimDir = (targetAim - transform.position).normalized;
-
-            transform.forward = Vector3.Lerp(transform.forward, aimDir, Time.deltaTime * 50.0f);
-        }
-
-        transform.position += moveDir * moveSpeed * Time.deltaTime;
-
-        animator.SetFloat("Speed", moveSpeed);
     }
 }

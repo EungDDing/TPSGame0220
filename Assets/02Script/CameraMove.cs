@@ -11,7 +11,7 @@ public class CameraMove : MonoBehaviour
     private Vector3 offset;
     private float rotX;
     private float rotY;
-    private bool isAiming;
+    private bool isAim;
 
     private void Awake()
     {
@@ -31,7 +31,7 @@ public class CameraMove : MonoBehaviour
 
     private void Update()
     {
-        if (isAiming) 
+        if (isAim) 
         {
             offset = new Vector3(0.5f, 1.5f, -0.7f);
         }
@@ -41,14 +41,14 @@ public class CameraMove : MonoBehaviour
         }
         rotX += Input.GetAxis("Mouse X") * sensitivity * Time.deltaTime;
         rotY += Input.GetAxis("Mouse Y") * sensitivity * Time.deltaTime;
-        rotY = Mathf.Clamp(rotY, -15.0f, 20.0f);
+        rotY = Mathf.Clamp(rotY, -15.0f, 10.0f);
 
         transform.rotation = Quaternion.Euler(-rotY, rotX, 0.0f);
         transform.position = player.position + transform.rotation * offset;
     }
 
-    public void AimCamera(bool newAimingState)
+    public void AimCamera(bool newAimState)
     {
-        isAiming = newAimingState;
+        isAim = newAimState;
     }
 }
