@@ -7,7 +7,7 @@ public class CameraMove : MonoBehaviour
 {
     [SerializeField] private float sensitivity;
     [SerializeField] private Transform player;
-    private ShootBullet shootBullet;
+    private PlayerManager playerManager;
     private Vector3 offset;
     private float rotX;
     private float rotY;
@@ -19,15 +19,14 @@ public class CameraMove : MonoBehaviour
         offset = new Vector3(0.5f, 1.5f, -1.5f);
         transform.forward = new Vector3(0.0f, 0.0f, 1.0f);
 
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-
-        if (!player.TryGetComponent<ShootBullet>(out shootBullet))
+        if (!player.TryGetComponent<PlayerManager>(out playerManager))
         {
-            Debug.Log("CameraMove.cs TryGetComponent<ShootBullet> failed");
+            Debug.Log("CameraMove.cs TryGetComponent<PlayerManager> failed");
         }
+        playerManager.OnAimingChange += AimCamera;
 
-        shootBullet.OnAimingChange += AimCamera;
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;       
     }
 
     private void Update()

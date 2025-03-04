@@ -10,7 +10,6 @@ public class ShootBullet : MonoBehaviour
     private float distance;
     private Vector3 spawnPoint;
     private Ray ray;
-    private Vector3 offset;
 
     public Action<bool> OnAimingChange;
 
@@ -18,7 +17,6 @@ public class ShootBullet : MonoBehaviour
 
     private void Awake()
     {
-        offset = Vector3.zero;
         distance = 100.0f;
     }
 
@@ -40,8 +38,7 @@ public class ShootBullet : MonoBehaviour
 
     public void CreateSphere()
     {
-        offset.x = UnityEngine.Random.Range(-0.05f, 0.05f);
-        offset.y = UnityEngine.Random.Range(-0.05f, 0.05f);
+
 
         ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
@@ -54,7 +51,5 @@ public class ShootBullet : MonoBehaviour
         {
             spawnPoint = ray.GetPoint(distance);
         }
-
-        Instantiate(shpere, spawnPoint + offset, Quaternion.identity);
     }
 }
