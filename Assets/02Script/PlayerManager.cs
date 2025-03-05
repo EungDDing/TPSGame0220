@@ -10,12 +10,12 @@ public class PlayerManager : MonoBehaviour
     private Vector3 camForward;
     private Vector3 camRight;
     private Vector3 moveDir;
-    private Vector3 playerForward; 
+    private Vector3 playerForward;
     private Ray ray;
     [SerializeField] private float moveSpeed;
     [SerializeField] private GameObject aimObject;
     [SerializeField] private float aimDistance;
-    
+
     private bool isRun;
     private bool isMove;
     private bool isAimingMove;
@@ -49,70 +49,41 @@ public class PlayerManager : MonoBehaviour
     private void Update()
     {
         PlayerMove();
-        isRun = isMove && Input.GetKey(KeyCode.LeftShift);
-        isAimingMove = isMove && Input.GetMouseButton(1);
+        isRun = isMove && Input.GetKey(KeyCode.LeftShift) && !isReload;
+        isAimingMove = isMove && Input.GetMouseButton(1) && !isReload;
 
         moveSpeed = isAimingMove ? 0.8f : (isRun ? 5.0f : (isMove ? 1.8f : 0.0f));
 
-        bool newAimState = Input.GetMouseButton(1) && (!isReload);
+        if (Input.GetKeyDown(KeyCode.R) && !isReload)
+        {
+            StartCoroutine("Reload");
+        }
 
-
+        bool newAimState = Input.GetMouseButton(1) && !isReload;
         if (newAimState != isAim)
         {
             isAim = newAimState;
             OnAimingChange?.Invoke(isAim);
         }
-        
-        
-            if (isMove)
-            {
-                playerForward = moveDir;
-                transform.forward = playerForward;
-            }
+
+        if (isMove)
+        {
+            playerForward = moveDir;
+            transform.forward = playerForward;
+        }
 
 
-            if (isAim)
-            {
-                animator.SetLayerWeight(1, 1);
-
-                Vector3 targetPos = Vector3.zero;
-                Transform camTransform = mainCam.transform;
-                RaycastHit hit;
-
-                if (Physics.Raycast(camTransform.position, camTransform.forward, out hit, Mathf.Infinity))
-                {
-                    targetPos = hit.point;
-                    aimObject.transform.position = hit.point;
-                }
-                else
-                {
-                    targetPos = camTransform.position + camTransform.forward * aimDistance;
-                    aimObject.transform.position = camTransform.position + camTransform.forward * aimDistance;
-                }
-
-                Vector3 targetAim = targetPos;
-                targetAim.y = transform.position.y;
-                Vector3 aimDir = (targetAim - transform.position).normalized;
-
-                transform.forward = aimDir;
-
-                if (Input.GetMouseButton(0))
-                {
-                    animator.SetBool("Fire", true);
-                }
-                else
-                {
-                    animator.SetBool("Fire", false);
-                }
-            }
-            else
-            {
-                animator.SetLayerWeight(1, 0);
-            }
-        
+        if (isAim)
+        {
+            animator.SetLayerWeight(1, 1);
+            PlayerAim();
+        }
+        else
+        {
+            animator.SetLayerWeight(1, 0);
+        }
 
         transform.position += moveDir * moveSpeed * Time.deltaTime;
-
         animator.SetFloat("Speed", moveSpeed);
     }
 
@@ -134,5 +105,53 @@ public class PlayerManager : MonoBehaviour
         moveDir.Normalize();
 
         isMove = (moveDir != Vector3.zero);
+    }
+
+    private void PlayerAim()
+    {
+        Vector3 targetPos = Vector3.zero;
+        Transform camTransform = mainCam.transform;
+        RaycastHit hit;
+
+        if (Physics.Raycast(camTransform.position, camTransform.forward, out hit, Mathf.Infinity))
+        {
+            targetPos = hit.point;
+            aimObject.transform.position = hit.point;
+        }
+        else
+        {
+            targetPos = camTransform.position + camTransform.forward * aimDistance;
+            aimObject.transform.position = camTransform.position + camTransform.forward * aimDistance;
+        }
+
+        Vector3 targetAim = targetPos;
+        targetAim.y = transform.position.y;
+        Vector3 aimDir = (targetAim - transform.position).normalized;
+
+        transform.forward = aimDir;
+
+        if (Input.GetMouseButton(0))
+        {
+            animator.SetBool("Fire", true);
+        }
+        else
+        {
+            animator.SetBool("Fire", false);
+        }
+    }
+    private IEnumerator Reload()
+    {
+        isReload = true;
+        animator.SetTrigger("Reload");
+        animator.SetLayerWeight(1, 1);
+
+        Debug.Log("Reload Trigger Set");
+
+        yield return new WaitForSeconds(3.0f);
+
+        animator.SetLayerWeight(1, 0);
+        isReload = false;
+
+        Debug.Log("Reload Finished");
     }
 }
