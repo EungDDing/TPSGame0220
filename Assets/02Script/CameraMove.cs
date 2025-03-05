@@ -23,6 +23,7 @@ public class CameraMove : MonoBehaviour
         {
             Debug.Log("CameraMove.cs TryGetComponent<PlayerManager> failed");
         }
+        
         playerManager.OnAimingChange += AimCamera;
 
         Cursor.lockState = CursorLockMode.Locked;

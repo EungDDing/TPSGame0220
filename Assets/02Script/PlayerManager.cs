@@ -7,10 +7,15 @@ public class PlayerManager : MonoBehaviour
 {
     [SerializeField] private Camera mainCam;
     private Animator animator;
+    private Transform spine;
     private Vector3 camForward;
     private Vector3 camRight;
     private Vector3 moveDir;
     private Vector3 playerForward;
+
+    private Vector3 aimDir;
+    private Vector3 targetPos;
+
     private Ray ray;
     [SerializeField] private float moveSpeed;
     [SerializeField] private GameObject aimObject;
@@ -45,6 +50,8 @@ public class PlayerManager : MonoBehaviour
         {
             Debug.Log("MoveChar.cs TryGetComponent<Animator> failed");
         }
+
+        spine = animator.GetBoneTransform(HumanBodyBones.Spine);
     }
     private void Update()
     {
@@ -56,7 +63,7 @@ public class PlayerManager : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.R) && !isReload)
         {
-            StartCoroutine("Reload");
+            StartCoroutine(Reload());
         }
 
         bool newAimState = Input.GetMouseButton(1) && !isReload;
@@ -72,21 +79,24 @@ public class PlayerManager : MonoBehaviour
             transform.forward = playerForward;
         }
 
-
-        if (isAim)
+        if (!isReload)
         {
-            animator.SetLayerWeight(1, 1);
-            PlayerAim();
-        }
-        else
-        {
-            animator.SetLayerWeight(1, 0);
+            if (isAim)
+            {
+                animator.SetBool("Aim", true);
+                animator.SetLayerWeight(1, 1);
+                PlayerAim();
+            }
+            else
+            {
+                animator.SetBool("Aim", false);
+                animator.SetLayerWeight(1, 0);
+            }
         }
 
         transform.position += moveDir * moveSpeed * Time.deltaTime;
         animator.SetFloat("Speed", moveSpeed);
     }
-
     private void PlayerMove()
     {
         moveDir.x = Input.GetAxisRaw("Horizontal");
@@ -109,7 +119,8 @@ public class PlayerManager : MonoBehaviour
 
     private void PlayerAim()
     {
-        Vector3 targetPos = Vector3.zero;
+    
+        targetPos = Vector3.zero;
         Transform camTransform = mainCam.transform;
         RaycastHit hit;
 
@@ -126,7 +137,7 @@ public class PlayerManager : MonoBehaviour
 
         Vector3 targetAim = targetPos;
         targetAim.y = transform.position.y;
-        Vector3 aimDir = (targetAim - transform.position).normalized;
+        aimDir = (targetAim - transform.position).normalized;
 
         transform.forward = aimDir;
 
@@ -142,12 +153,12 @@ public class PlayerManager : MonoBehaviour
     private IEnumerator Reload()
     {
         isReload = true;
-        animator.SetTrigger("Reload");
         animator.SetLayerWeight(1, 1);
-
+        animator.SetTrigger("Reload");
+        
         Debug.Log("Reload Trigger Set");
 
-        yield return new WaitForSeconds(3.0f);
+        yield return new WaitForSeconds(4.0f);
 
         animator.SetLayerWeight(1, 0);
         isReload = false;
