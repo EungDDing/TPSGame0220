@@ -20,6 +20,10 @@ public class PlayerManager : MonoBehaviour
     [SerializeField] private float moveSpeed;
     [SerializeField] private GameObject aimObject;
     [SerializeField] private float aimDistance;
+    [SerializeField] private GameObject bullet;
+    [SerializeField] private Transform spawnPos;
+
+    private float bulletDelay;
 
     private bool isRun;
     private bool isMove;
@@ -97,6 +101,14 @@ public class PlayerManager : MonoBehaviour
         transform.position += moveDir * moveSpeed * Time.deltaTime;
         animator.SetFloat("Speed", moveSpeed);
     }
+    private void LateUpdate()
+    {
+        if (isAim)
+        {
+            spine = animator.GetBoneTransform(HumanBodyBones.Spine);
+            spine.transform.LookAt(aimObject.transform.position);
+        }
+    }
     private void PlayerMove()
     {
         moveDir.x = Input.GetAxisRaw("Horizontal");
@@ -144,11 +156,16 @@ public class PlayerManager : MonoBehaviour
         if (Input.GetMouseButton(0))
         {
             animator.SetBool("Fire", true);
+            StartCoroutine(Shoot());
         }
         else
         {
             animator.SetBool("Fire", false);
         }
+    }
+    private void SpawnBullet()
+    {
+        Instantiate(bullet, spawnPos.position, Quaternion.identity);
     }
     private IEnumerator Reload()
     {
@@ -164,5 +181,9 @@ public class PlayerManager : MonoBehaviour
         isReload = false;
 
         Debug.Log("Reload Finished");
+    }
+    private IEnumerator Shoot()
+    {
+        yield return null;
     }
 }

@@ -1,9 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using UnityEngine;
 
-public class CameraMove : MonoBehaviour
+public class AimCameraMove : MonoBehaviour
 {
     [SerializeField] private float sensitivity;
     [SerializeField] private Transform player;
@@ -16,30 +15,32 @@ public class CameraMove : MonoBehaviour
     private void Awake()
     {
         sensitivity = 400.0f;
-        offset = new Vector3(0.5f, 1.5f, -1.5f);
+        offset = new Vector3(0.4f, 1.5f, -0.6f);
         transform.forward = new Vector3(0.0f, 0.0f, 1.0f);
 
         if (!player.TryGetComponent<PlayerManager>(out playerManager))
         {
             Debug.Log("CameraMove.cs TryGetComponent<PlayerManager> failed");
         }
-        
+
         playerManager.OnAimingChange += AimCamera;
 
         Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;       
+        Cursor.visible = false;
     }
 
     private void Update()
     {
+
+
         if (isAim)
-        {
-            offset = new Vector3(0.4f, 1.5f, -0.6f);
-        }
+            gameObject.SetActive(true);
         else
-        {
-            offset = new Vector3(0.5f, 1.5f, -1.5f);
-        }
+            gameObject.SetActive(false);
+
+
+
+
         rotX += Input.GetAxis("Mouse X") * sensitivity * Time.deltaTime;
         rotY += Input.GetAxis("Mouse Y") * sensitivity * Time.deltaTime;
         rotY = Mathf.Clamp(rotY, -15.0f, 10.0f);
