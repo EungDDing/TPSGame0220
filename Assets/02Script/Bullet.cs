@@ -13,10 +13,10 @@ public class Bullet : MonoBehaviour
     private GameObject obj;
     private Rigidbody rig;
     private SphereCollider col;
+    private float spanTime;
     private void Awake()
     {
         obj = GameObject.Find("AimObject");
-        Debug.Log(obj.transform.position);
         obj.TryGetComponent<Transform>(out targetPos);
 
         if (TryGetComponent<Rigidbody>(out rig))
@@ -32,13 +32,31 @@ public class Bullet : MonoBehaviour
         moveSpeed = 1.0f;
         moveDir = targetPos.position - transform.position;
         transform.forward = moveDir;
+
+        spanTime = 3.0f;
     }
     private void Update()
     {
+        spanTime -= Time.deltaTime;
+        if (spanTime <= 0)
+        {
+            DestoryBullet();
+            
+        }
+            
         moveBullet();
     }
     private void moveBullet()
     {
         transform.position += moveDir * (moveSpeed * Time.deltaTime);
+    }
+    private void DestoryBullet()
+    {
+        Destroy(gameObject);
+        spanTime = 3;
+    }
+    private void OnTriggerEnter(Collider other)
+    {
+        DestoryBullet();
     }
 }

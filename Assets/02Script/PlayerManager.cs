@@ -22,7 +22,11 @@ public class PlayerManager : MonoBehaviour
     [SerializeField] private float aimDistance;
     [SerializeField] private GameObject bullet;
     [SerializeField] private Transform spawnPos;
-
+    [SerializeField] private float maxShootDelay = 0.26666f;
+    private float shootDelay;
+    private int hasBullet = 60;
+    private int maxBullet = 30;
+    private int currentBullet = 0;
     private float bulletDelay;
 
     private bool isRun;
@@ -30,10 +34,13 @@ public class PlayerManager : MonoBehaviour
     private bool isAimingMove;
     private bool isAim;
     private bool isReload;
+    private bool isEmpty;
 
     public delegate void IsAimingChange(bool isAiming);
     public event IsAimingChange OnAimingChange;
-
+    public delegate void BulletCountChange(int bulletCount);
+    public event BulletCountChange OnCurBulletCountChange;
+    public event BulletCountChange OnHasBulletCountChange;
     public float MoveSpeed
     {
         get => moveSpeed;
@@ -46,6 +53,7 @@ public class PlayerManager : MonoBehaviour
         isMove = false;
         isAim = false;
         isReload = false;
+        isEmpty = false;
 
         aimDistance = 20.0f;
         moveSpeed = 0.0f;
@@ -56,6 +64,9 @@ public class PlayerManager : MonoBehaviour
         }
 
         spine = animator.GetBoneTransform(HumanBodyBones.Spine);
+
+        shootDelay = 0.0f;
+        InitBullet();
     }
     private void Update()
     {
@@ -153,18 +164,34 @@ public class PlayerManager : MonoBehaviour
 
         transform.forward = aimDir;
 
-        if (Input.GetMouseButton(0))
+        if (Input.GetMouseButton(0) && !isEmpty)
         {
+            Debug.Log(isEmpty);
             animator.SetBool("Fire", true);
-            StartCoroutine(Shoot());
+            FireBullet();
         }
         else
         {
             animator.SetBool("Fire", false);
         }
     }
-    private void SpawnBullet()
+    private void FireBullet()
     {
+        shootDelay += Time.deltaTime;
+        if (shootDelay < maxShootDelay)
+            return;
+        if (currentBullet <= 0)
+        {
+            StartCoroutine("Reload");
+            return;
+        }
+        currentBullet -= 1;
+        OnCurBulletCountChange?.Invoke(currentBullet);
+
+        if (hasBullet == 0 && currentBullet == 0)
+            isEmpty = true;
+
+        shootDelay = 0;
         Instantiate(bullet, spawnPos.position, Quaternion.identity);
     }
     private IEnumerator Reload()
@@ -177,13 +204,36 @@ public class PlayerManager : MonoBehaviour
 
         yield return new WaitForSeconds(4.0f);
 
+        InitBullet();
         animator.SetLayerWeight(1, 0);
         isReload = false;
 
         Debug.Log("Reload Finished");
     }
-    private IEnumerator Shoot()
+    private void InitBullet()
     {
-        yield return null;
+        hasBullet = hasBullet + currentBullet;
+        if (hasBullet == 0)
+        {
+            return;
+        }
+        else
+        {
+            if (hasBullet < maxBullet)
+            {
+                maxBullet = hasBullet;
+                currentBullet = hasBullet;
+            }
+            else
+            {
+                maxBullet = 30;
+                currentBullet = maxBullet;
+            }
+        }
+        
+        hasBullet = hasBullet - maxBullet;
+        
+        OnHasBulletCountChange?.Invoke(hasBullet);
+        OnCurBulletCountChange?.Invoke(currentBullet);
     }
 }
