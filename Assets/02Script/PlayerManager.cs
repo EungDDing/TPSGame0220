@@ -6,6 +6,7 @@ using UnityEngine;
 public class PlayerManager : MonoBehaviour
 {
     [SerializeField] private Camera mainCam;
+    private CharacterController controller;
     private Animator animator;
     private Transform spine;
     private Vector3 camForward;
@@ -23,8 +24,11 @@ public class PlayerManager : MonoBehaviour
     [SerializeField] private GameObject bullet;
     [SerializeField] private Transform spawnPos;
     [SerializeField] private float maxShootDelay = 0.26666f;
+
+    [SerializeField] private AudioClip shootingSound;
+    private AudioSource audioSource;
     private float shootDelay;
-    private int hasBullet = 60;
+    private int hasBullet = 120;
     private int maxBullet = 30;
     private int currentBullet = 0;
     private float bulletDelay;
@@ -35,6 +39,8 @@ public class PlayerManager : MonoBehaviour
     private bool isAim;
     private bool isReload;
     private bool isEmpty;
+
+    private bool isEnable;
 
     public delegate void IsAimingChange(bool isAiming);
     public event IsAimingChange OnAimingChange;
@@ -55,14 +61,19 @@ public class PlayerManager : MonoBehaviour
         isReload = false;
         isEmpty = false;
 
+        isEnable = true;
+
         aimDistance = 20.0f;
         moveSpeed = 0.0f;
+
+        TryGetComponent<CharacterController>(out controller);
 
         if (!TryGetComponent<Animator>(out animator))
         {
             Debug.Log("MoveChar.cs TryGetComponent<Animator> failed");
         }
 
+        TryGetComponent<AudioSource>(out audioSource);
         spine = animator.GetBoneTransform(HumanBodyBones.Spine);
 
         shootDelay = 0.0f;
@@ -76,17 +87,9 @@ public class PlayerManager : MonoBehaviour
 
         moveSpeed = isAimingMove ? 0.8f : (isRun ? 5.0f : (isMove ? 1.8f : 0.0f));
 
-        if (Input.GetKeyDown(KeyCode.R) && !isReload)
-        {
-            StartCoroutine(Reload());
-        }
+        PlayerReload();
 
-        bool newAimState = Input.GetMouseButton(1) && !isReload;
-        if (newAimState != isAim)
-        {
-            isAim = newAimState;
-            OnAimingChange?.Invoke(isAim);
-        }
+        PlayerAim();
 
         if (isMove)
         {
@@ -100,7 +103,7 @@ public class PlayerManager : MonoBehaviour
             {
                 animator.SetBool("Aim", true);
                 animator.SetLayerWeight(1, 1);
-                PlayerAim();
+                Aiming();
             }
             else
             {
@@ -109,8 +112,16 @@ public class PlayerManager : MonoBehaviour
             }
         }
 
-        transform.position += moveDir * moveSpeed * Time.deltaTime;
-        animator.SetFloat("Speed", moveSpeed);
+        if (isEnable)
+        {
+            controller.Move(moveDir * moveSpeed * Time.deltaTime);
+            animator.SetFloat("Speed", moveSpeed);
+        }
+        else
+        {
+            moveSpeed = 0.0f;
+            animator.SetFloat("Speed", moveSpeed);
+        }
     }
     private void LateUpdate()
     {
@@ -122,6 +133,12 @@ public class PlayerManager : MonoBehaviour
     }
     private void PlayerMove()
     {
+        if (!isEnable)
+        {
+            return;
+        }
+            
+      
         moveDir.x = Input.GetAxisRaw("Horizontal");
         moveDir.y = 0.0f;
         moveDir.z = Input.GetAxisRaw("Vertical");
@@ -139,8 +156,29 @@ public class PlayerManager : MonoBehaviour
 
         isMove = (moveDir != Vector3.zero);
     }
+    private void PlayerReload()
+    {
+        if (!isEnable)
+            return;
 
+        if (Input.GetKeyDown(KeyCode.R) && !isReload)
+        {
+            StartCoroutine(Reload());
+        }
+    }
     private void PlayerAim()
+    {
+        if (!isEnable)
+            return;
+
+        bool newAimState = Input.GetMouseButton(1) && !isReload;
+        if (newAimState != isAim)
+        {
+            isAim = newAimState;
+            OnAimingChange?.Invoke(isAim);
+        }
+    }
+    private void Aiming()
     {
     
         targetPos = Vector3.zero;
@@ -166,7 +204,6 @@ public class PlayerManager : MonoBehaviour
 
         if (Input.GetMouseButton(0) && !isEmpty)
         {
-            Debug.Log(isEmpty);
             animator.SetBool("Fire", true);
             FireBullet();
         }
@@ -188,11 +225,14 @@ public class PlayerManager : MonoBehaviour
         currentBullet -= 1;
         OnCurBulletCountChange?.Invoke(currentBullet);
 
+        PlayWeaponSound(shootingSound);
+
         if (hasBullet == 0 && currentBullet == 0)
             isEmpty = true;
 
         shootDelay = 0;
-        Instantiate(bullet, spawnPos.position, Quaternion.identity);
+        // Instantiate(bullet, spawnPos.position, Quaternion.identity);
+        PoolManager.instance.FireBullet(spawnPos.position, aimObject.transform.position, gameObject, 10, 10.0f);
     }
     private IEnumerator Reload()
     {
@@ -236,4 +276,18 @@ public class PlayerManager : MonoBehaviour
         OnHasBulletCountChange?.Invoke(hasBullet);
         OnCurBulletCountChange?.Invoke(currentBullet);
     }
+    private void SetObjectPosition(GameObject obj, Transform tragetTransform)
+    {
+        obj.transform.position = tragetTransform.position;
+    }
+    private void PlayWeaponSound(AudioClip sound)
+    {
+        audioSource.clip = sound;
+        audioSource.Play();
+    }
+    public void SetEnable(bool state)
+    {
+        isEnable = state;
+    }
+    
 }

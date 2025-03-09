@@ -10,10 +10,12 @@ public class Bullet : MonoBehaviour
     [SerializeField] private float moveSpeed;
     private Vector3 moveDir;
     private Transform targetPos;
+    private GameObject attacker;
     private GameObject obj;
     private Rigidbody rig;
     private SphereCollider col;
     private float spanTime;
+    private int bulletDamage;
     private void Awake()
     {
         obj = GameObject.Find("AimObject");
@@ -29,10 +31,6 @@ public class Bullet : MonoBehaviour
             col.radius = 0.01f;
         }
 
-        moveSpeed = 1.0f;
-        moveDir = targetPos.position - transform.position;
-        transform.forward = moveDir;
-
         spanTime = 3.0f;
     }
     private void Update()
@@ -46,14 +44,23 @@ public class Bullet : MonoBehaviour
             
         moveBullet();
     }
+    public void InitBullet(Vector3 spawnPos, Vector3 targetPos, GameObject owner, int damage, float speed)
+    {
+        moveDir = targetPos - spawnPos;
+        moveDir.Normalize();
+        moveSpeed = speed;
+        bulletDamage = damage;
+        attacker = owner;
+        transform.forward = moveDir;
+    }
     private void moveBullet()
     {
         transform.position += moveDir * (moveSpeed * Time.deltaTime);
     }
     private void DestoryBullet()
     {
-        Destroy(gameObject);
-        spanTime = 3;
+        PoolManager.instance.ReturnToPool(this);
+        spanTime = 3.0f;
     }
     private void OnTriggerEnter(Collider other)
     {
