@@ -137,8 +137,7 @@ public class PlayerManager : MonoBehaviour
         {
             return;
         }
-            
-      
+
         moveDir.x = Input.GetAxisRaw("Horizontal");
         moveDir.y = 0.0f;
         moveDir.z = Input.GetAxisRaw("Vertical");
@@ -199,8 +198,18 @@ public class PlayerManager : MonoBehaviour
         Vector3 targetAim = targetPos;
         targetAim.y = transform.position.y;
         aimDir = (targetAim - transform.position).normalized;
+        
+        Debug.Log(Vector3.Distance(transform.position, targetPos));
 
-        transform.forward = aimDir;
+        if (Vector3.Distance(transform.position, targetPos) < 2.5f)
+        {
+            isAim = false;
+            OnAimingChange?.Invoke(isAim);
+        }
+        else
+        {
+            transform.forward = aimDir;
+        }
 
         if (Input.GetMouseButton(0) && !isEmpty)
         {

@@ -6,7 +6,8 @@ using UnityEngine;
 public class CameraMove : MonoBehaviour
 {
     [SerializeField] private float sensitivity;
-    [SerializeField] private Transform player;
+    [SerializeField] private Transform playerTransform;
+    private GameObject player; 
     private GameObject obj;
     private PlayerManager playerManager;
     private EndPortal endPortal;
@@ -16,13 +17,16 @@ public class CameraMove : MonoBehaviour
     private bool isAim;
 
     private bool isEnable;
+
+    [SerializeField] private LayerMask layerMask;
     private void Awake()
     {
         sensitivity = 400.0f;
-        offset = new Vector3(0.5f, 1.5f, -1.5f);
+        offset = new Vector3(0.5f, 0.5f, -1.5f);
         transform.forward = new Vector3(1.0f, 0.0f, 0.0f);
 
         isEnable = true;
+        player = GameObject.FindWithTag("Player");
 
         if (!player.TryGetComponent<PlayerManager>(out playerManager))
         {
@@ -35,13 +39,14 @@ public class CameraMove : MonoBehaviour
         }
         playerManager.OnAimingChange += AimCamera;
         Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;       
+        Cursor.visible = false;
     }
 
     private void Update()
     {
         ChangeMouseState();
         RotateCamera();
+        CheckCollision();
     }
     public void RotateCamera()
     {
@@ -49,18 +54,18 @@ public class CameraMove : MonoBehaviour
             return;
         if (isAim)
         {
-            offset = new Vector3(0.4f, 1.5f, -0.6f);
+            offset = new Vector3(0.4f, 0.0f, -0.6f);
         }
         else
         {
-            offset = new Vector3(0.5f, 1.5f, -1.5f);
+            offset = new Vector3(0.5f, 0.0f, -1.5f);
         }
         rotX += Input.GetAxis("Mouse X") * sensitivity * Time.deltaTime;
         rotY += Input.GetAxis("Mouse Y") * sensitivity * Time.deltaTime;
         rotY = Mathf.Clamp(rotY, -15.0f, 10.0f);
 
         transform.rotation = Quaternion.Euler(-rotY, rotX, 0.0f);
-        transform.position = transform.rotation * offset + player.position;
+        transform.position = transform.rotation * offset + playerTransform.position;
     }
     public void AimCamera(bool newAimState)
     {
@@ -81,6 +86,26 @@ public class CameraMove : MonoBehaviour
         {
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
+        }
+    }
+    private void CheckCollision()
+    {
+        Vector3 rayDir;
+        rayDir = Camera.main.transform.position - playerTransform.position;
+        float distance = Vector3.Distance(Camera.main.transform.position, playerTransform.position);
+
+        
+        if (Physics.Raycast(playerTransform.position, rayDir, out RaycastHit hit, distance, layerMask))
+        {
+            transform.position = hit.point - rayDir.normalized;
+            if (Vector3.Distance(Camera.main.transform.position, playerTransform.position) < 0.5f)
+            {
+                Camera.main.cullingMask = ~(1 << LayerMask.NameToLayer("Player"));
+            }
+        }
+        else
+        {
+            Camera.main.cullingMask = -1;
         }
     }
 }
