@@ -40,6 +40,16 @@ public class Enemy : MonoBehaviour
             agent.SetDestination(obj.transform.position);
         }
         transform.TryGetComponent<Animator>(out animator);
+
+        agent.speed = 3.0f;
+        agent.stoppingDistance = 10.0f;
+        gameObject.layer = LayerMask.NameToLayer("Enemy");
+        InitEnemyHP();
+
+        if (TryGetComponent<EnemyAI>(out enemyAI))
+        {
+            enemyAI.StartAI();
+        }
     }
     private void Update()
     {
@@ -53,18 +63,6 @@ public class Enemy : MonoBehaviour
             {
                 animator.SetBool(animHash_Run, false);
             }
-        }
-    }
-    public void InitEnemy()
-    {
-        agent.speed = 3.0f;
-        agent.stoppingDistance = 10.0f;
-        gameObject.layer = LayerMask.NameToLayer("Enemy");
-        InitEnemyHP();
-
-        if (TryGetComponent<EnemyAI>(out enemyAI))
-        {
-            enemyAI.StartAI();
         }
     }
     private void InitEnemyHP()
