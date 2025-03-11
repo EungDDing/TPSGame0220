@@ -14,6 +14,7 @@ public class Bullet : MonoBehaviour
     private GameObject obj;
     private Rigidbody rig;
     private SphereCollider col;
+    private Enemy enemy;
     private float spanTime;
     private int bulletDamage;
     private void Awake()
@@ -64,6 +65,11 @@ public class Bullet : MonoBehaviour
     }
     private void OnTriggerEnter(Collider other)
     {
+        if (other.CompareTag("Enemy"))
+        {
+            other.TryGetComponent<Enemy>(out enemy);
+            enemy.CurrentHP -= bulletDamage;
+        }
         DestoryBullet();
     }
 }

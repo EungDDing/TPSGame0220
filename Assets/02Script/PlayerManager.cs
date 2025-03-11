@@ -23,7 +23,7 @@ public class PlayerManager : MonoBehaviour
     [SerializeField] private float aimDistance;
     [SerializeField] private GameObject bullet;
     [SerializeField] private Transform spawnPos;
-    [SerializeField] private float maxShootDelay = 0.26666f;
+    [SerializeField] private float maxShootDelay = 0.7f;
 
     [SerializeField] private AudioClip shootingSound;
     private AudioSource audioSource;
@@ -31,7 +31,6 @@ public class PlayerManager : MonoBehaviour
     private int hasBullet = 120;
     private int maxBullet = 30;
     private int currentBullet = 0;
-    private float bulletDelay;
 
     private bool isRun;
     private bool isMove;
@@ -39,8 +38,12 @@ public class PlayerManager : MonoBehaviour
     private bool isAim;
     private bool isReload;
     private bool isEmpty;
-
+    
     private bool isEnable;
+
+    private bool isAimCollision;
+    private float disableAimTime = 0.0f;
+    private float disableTime = 1.5f;
 
     public delegate void IsAimingChange(bool isAiming);
     public event IsAimingChange OnAimingChange;
@@ -60,6 +63,7 @@ public class PlayerManager : MonoBehaviour
         isAim = false;
         isReload = false;
         isEmpty = false;
+        isAimCollision = false;
 
         isEnable = true;
 
@@ -83,12 +87,14 @@ public class PlayerManager : MonoBehaviour
     {
         PlayerMove();
         isRun = isMove && Input.GetKey(KeyCode.LeftShift) && !isReload;
-        isAimingMove = isMove && Input.GetMouseButton(1) && !isReload;
+        isAimingMove = isMove && Input.GetMouseButton(1) && !isReload && !isAimCollision;
 
         moveSpeed = isAimingMove ? 0.8f : (isRun ? 5.0f : (isMove ? 1.8f : 0.0f));
 
         PlayerReload();
 
+        CheckAimCollision();
+        
         PlayerAim();
 
         if (isMove)
@@ -167,7 +173,7 @@ public class PlayerManager : MonoBehaviour
     }
     private void PlayerAim()
     {
-        if (!isEnable)
+        if (!isEnable || isAimCollision)
             return;
 
         bool newAimState = Input.GetMouseButton(1) && !isReload;
@@ -179,7 +185,6 @@ public class PlayerManager : MonoBehaviour
     }
     private void Aiming()
     {
-    
         targetPos = Vector3.zero;
         Transform camTransform = mainCam.transform;
         RaycastHit hit;
@@ -198,18 +203,8 @@ public class PlayerManager : MonoBehaviour
         Vector3 targetAim = targetPos;
         targetAim.y = transform.position.y;
         aimDir = (targetAim - transform.position).normalized;
-        
-        Debug.Log(Vector3.Distance(transform.position, targetPos));
 
-        if (Vector3.Distance(transform.position, targetPos) < 2.5f)
-        {
-            isAim = false;
-            OnAimingChange?.Invoke(isAim);
-        }
-        else
-        {
-            transform.forward = aimDir;
-        }
+        transform.forward = aimDir;
 
         if (Input.GetMouseButton(0) && !isEmpty)
         {
@@ -285,10 +280,6 @@ public class PlayerManager : MonoBehaviour
         OnHasBulletCountChange?.Invoke(hasBullet);
         OnCurBulletCountChange?.Invoke(currentBullet);
     }
-    private void SetObjectPosition(GameObject obj, Transform tragetTransform)
-    {
-        obj.transform.position = tragetTransform.position;
-    }
     private void PlayWeaponSound(AudioClip sound)
     {
         audioSource.clip = sound;
@@ -298,5 +289,21 @@ public class PlayerManager : MonoBehaviour
     {
         isEnable = state;
     }
-    
+    private void CheckAimCollision()
+    {
+        if (Vector3.Distance(spawnPos.position, targetPos) < 0.8f)
+        {
+            if (!isAimCollision)
+            {
+                isAimCollision = true;
+                disableAimTime = Time.time + disableTime;
+                isAim = false;
+                OnAimingChange?.Invoke(isAim);
+            }
+        }
+        else if (isAimCollision && Time.time >= disableAimTime)
+        {
+            isAimCollision = false;
+        }
+    }
 }
