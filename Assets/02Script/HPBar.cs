@@ -6,6 +6,8 @@ using UnityEngine.UI;
 public class HPBar : MonoBehaviour
 {
     [SerializeField] private Image hpBar;
+    [SerializeField] private Transform player;
+    private Vector3 faceDir;
     private Enemy enemy;
     private float maxHP = 100;
     private void Awake()
@@ -15,6 +17,12 @@ public class HPBar : MonoBehaviour
         obj.TryGetComponent<Enemy>(out enemy);
 
         enemy.ChangeHP += FillAmountBar;
+    }
+    private void Update()
+    {
+        faceDir = transform.position - player.position;
+        faceDir.y = 0.0f;
+        transform.forward = faceDir;
     }
     private void FillAmountBar(int hp)
     {

@@ -23,7 +23,7 @@ public class PlayerManager : MonoBehaviour
     [SerializeField] private float aimDistance;
     [SerializeField] private GameObject bullet;
     [SerializeField] private Transform spawnPos;
-    [SerializeField] private float maxShootDelay = 0.7f;
+    [SerializeField] private float maxShootDelay = 0.07f;
 
     [SerializeField] private AudioClip shootingSound;
     private AudioSource audioSource;
