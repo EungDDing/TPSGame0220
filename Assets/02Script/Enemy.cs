@@ -11,7 +11,7 @@ public class Enemy : MonoBehaviour
     private int animHash_Run = Animator.StringToHash("IsRun");
     private int animHash_Fire = Animator.StringToHash("IsFire");
 
-    private GameObject obj;
+    private GameObject player;
 
     private EnemyAI enemyAI;
 
@@ -33,20 +33,12 @@ public class Enemy : MonoBehaviour
     }
     private void Awake()
     {
-        obj = GameObject.Find("Player");
+        player = GameObject.Find("Player");
         TryGetComponent<NavMeshAgent>(out agent);
-        if (obj != null)
-        {
-            agent.SetDestination(obj.transform.position);
-        }
         transform.TryGetComponent<Animator>(out animator);
-
-        agent.speed = 3.0f;
-        agent.stoppingDistance = 10.0f;
-        gameObject.layer = LayerMask.NameToLayer("Enemy");
-        InitEnemyHP();
-
-        if (TryGetComponent<EnemyAI>(out enemyAI))
+        TryGetComponent<EnemyAI>(out enemyAI);
+        
+        if (enemyAI != null)
         {
             enemyAI.StartAI();
         }
@@ -59,10 +51,6 @@ public class Enemy : MonoBehaviour
             {
                 animator.SetBool(animHash_Run, true);
             }
-            else
-            {
-                animator.SetBool(animHash_Run, false);
-            }
         }
     }
     private void InitEnemyHP()
@@ -71,6 +59,14 @@ public class Enemy : MonoBehaviour
     }
     public void AttackTarget()
     {
+        agent.isStopped = true;
         animator.SetTrigger(animHash_Fire);
+    }
+    public void InitEnemy()
+    {
+        agent.speed = 3.0f;
+        agent.stoppingDistance = 10.0f;
+        gameObject.layer = LayerMask.NameToLayer("Enemy");
+        InitEnemyHP();
     }
 }

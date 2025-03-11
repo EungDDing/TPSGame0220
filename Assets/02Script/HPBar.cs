@@ -6,7 +6,7 @@ using UnityEngine.UI;
 public class HPBar : MonoBehaviour
 {
     [SerializeField] private Image hpBar;
-    [SerializeField] private Transform player;
+    private Transform player;
     private Vector3 faceDir;
     private Enemy enemy;
     private float maxHP = 100;
@@ -15,7 +15,8 @@ public class HPBar : MonoBehaviour
         GameObject obj;
         obj = GameObject.FindWithTag("Enemy");
         obj.TryGetComponent<Enemy>(out enemy);
-
+        obj = GameObject.FindWithTag("Player");
+        player = obj.transform;
         enemy.ChangeHP += FillAmountBar;
     }
     private void Update()
