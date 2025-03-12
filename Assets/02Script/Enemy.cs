@@ -71,13 +71,13 @@ public class Enemy : MonoBehaviour
         animator.SetTrigger(animHash_Fire);
 
         shootOffset.x = Random.Range(-0.5f, 0.5f);
-        shootOffset.y = 0.0f;
-        shootOffset.z = Random.Range(-0.5f, 0.5f);
+        shootOffset.y = Random.Range(-0.5f, 0.5f);
+        shootOffset.z = 0.0f;
 
         Vector3 ray = (playerObject.transform.GetChild(1).position + shootOffset) - firePos.position;
 
         Debug.DrawLine(firePos.position, playerObject.transform.GetChild(1).position + shootOffset, Color.red, 0.5f);
-        if (Physics.Raycast(firePos.position, ray, out hit, 10.0f, layerMask))
+        if (Physics.Raycast(firePos.position, ray, out hit, 10.0f))
         {
             Debug.Log("Fire");
             
@@ -85,6 +85,10 @@ public class Enemy : MonoBehaviour
             {
                 Debug.Log("Hit");
                 player.TakeDamage(damage);
+            }
+            else if (hit.collider.CompareTag("Architecture") || hit.collider.CompareTag("Cover"))
+            {
+                Debug.Log("Hit Cover");
             }
         }
     }
