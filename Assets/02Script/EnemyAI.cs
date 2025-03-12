@@ -30,7 +30,6 @@ public class EnemyAI : MonoBehaviour
     {
         isInit = true;
         agent.isStopped = true;
-        Debug.Log(state);
         ChangeState(state);
     }
     public void ChangeState(Enemy_State newState)
@@ -51,7 +50,7 @@ public class EnemyAI : MonoBehaviour
         agent.isStopped = false;
         while (mainTarget != null)
         {
-            if (GetDistanceToTarget() < 10.0f)
+            if (GetDistanceToTarget() < 15.0f)
             {
                 ChangeState(Enemy_State.Attack);
             }
@@ -71,7 +70,7 @@ public class EnemyAI : MonoBehaviour
         {
             yield return new WaitForSeconds(0.2f);
 
-            if (mainTarget != null && GetDistanceToTarget() < 10.0f)
+            if (mainTarget != null && GetDistanceToTarget() < 15.0f)
             {
                 transform.LookAt(mainTarget.transform);
                 transform.rotation *= Quaternion.Euler(0.0f, 40.0f, 0.0f);
@@ -111,7 +110,7 @@ public class EnemyAI : MonoBehaviour
     }
     private void SetTargetPos(Vector3 newTarget)
     {
-        if (NavMesh.SamplePosition(newTarget, out NavMeshHit hit, 10.0f, NavMesh.AllAreas))
+        if (NavMesh.SamplePosition(newTarget, out NavMeshHit hit, 15.0f, NavMesh.AllAreas))
         {
             newTarget = hit.position;
             agent.SetDestination(newTarget);

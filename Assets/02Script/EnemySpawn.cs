@@ -10,8 +10,18 @@ public class EnemySpawn : MonoBehaviour
     private EnemyAI enemyAI;
     private void Awake()
     {
+        StartCoroutine(SpawnEnemy());
+    }
+
+    private IEnumerator SpawnEnemy()
+    {
         GameObject newEnemy = Instantiate(enemyPrefab, transform.position, Quaternion.Euler(rotation));
+        yield return null;
+
         enemy = newEnemy.GetComponent<Enemy>();
+        enemy.InitEnemy();
+
+        Debug.Log($"[Enemy »ý¼º] {enemy.name} (ID: {enemy.GetInstanceID()})");
         enemy.InitEnemy();
     }
 }

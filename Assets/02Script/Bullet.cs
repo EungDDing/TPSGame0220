@@ -65,11 +65,15 @@ public class Bullet : MonoBehaviour
     }
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Enemy"))
+        if (other.CompareTag("EnemyHitbox"))
         {
-            other.TryGetComponent<Enemy>(out enemy);
-            enemy.TakeDamage(bulletDamage);
+            enemy = other.GetComponentInParent<Enemy>();
+            enemy.TakeDamage(bulletDamage); 
+            DestoryBullet();
         }
-        DestoryBullet();
+        else if (other.CompareTag("Architecture") || other.CompareTag("Cover"))
+        {
+            DestoryBullet();
+        }
     }
 }

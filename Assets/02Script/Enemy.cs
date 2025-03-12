@@ -70,14 +70,14 @@ public class Enemy : MonoBehaviour
         agent.isStopped = true;
         animator.SetTrigger(animHash_Fire);
 
-        shootOffset.x = Random.Range(-0.5f, 0.5f);
-        shootOffset.y = Random.Range(-0.5f, 0.5f);
+        shootOffset.x = Random.Range(-0.3f, 0.3f);
+        shootOffset.y = Random.Range(-0.3f, 0.3f);
         shootOffset.z = 0.0f;
 
         Vector3 ray = (playerObject.transform.GetChild(1).position + shootOffset) - firePos.position;
 
         Debug.DrawLine(firePos.position, playerObject.transform.GetChild(1).position + shootOffset, Color.red, 0.5f);
-        if (Physics.Raycast(firePos.position, ray, out hit, 10.0f))
+        if (Physics.Raycast(firePos.position, ray, out hit, 15.0f))
         {
             Debug.Log("Fire");
             
@@ -98,7 +98,7 @@ public class Enemy : MonoBehaviour
     public void InitEnemy()
     {
         agent.speed = 3.0f;
-        agent.stoppingDistance = 10.0f;
+        agent.stoppingDistance = 15.0f;
         gameObject.layer = LayerMask.NameToLayer("Enemy");
         InitEnemyHP();
 
@@ -106,7 +106,6 @@ public class Enemy : MonoBehaviour
     }
     public void TakeDamage(int damage)
     {
-        Debug.Log(damage);
         CurrentHP -= damage;
         if (CurrentHP == 0 && !isDie)
         {

@@ -339,4 +339,8 @@ public class PlayerManager : MonoBehaviour
         Debug.Log(damage);
         CurrentHP -= damage;
     }
+    public void GetAmmo()
+    {
+
+    }
 }

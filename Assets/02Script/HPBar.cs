@@ -13,12 +13,20 @@ public class HPBar : MonoBehaviour
     private void Awake()
     {
         GameObject obj;
-        obj = GameObject.FindWithTag("Enemy");
-        obj.TryGetComponent<Enemy>(out enemy);
         obj = GameObject.FindWithTag("Player");
+        enemy = GetComponentInParent<Enemy>();
+        
         player = obj.transform;
+    }
+    private void OnEnable()
+    {
         enemy.ChangeHP += FillAmountBar;
         enemy.OnEnemyDie += SetDisable;
+    }
+    private void OnDisable()
+    {
+        enemy.ChangeHP -= FillAmountBar;
+        enemy.OnEnemyDie -= SetDisable;
     }
     private void Update()
     {
