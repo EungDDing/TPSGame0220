@@ -18,14 +18,14 @@ public class PlayerManager : MonoBehaviour
     private Vector3 aimDir;
     private Vector3 targetPos;
 
-    private Ray ray;
+    private RaycastHit hit;
     [SerializeField] private float moveSpeed;
     [SerializeField] private GameObject aimObject;
     [SerializeField] private float aimDistance;
     [SerializeField] private GameObject bullet;
     [SerializeField] private Transform spawnPos;
     [SerializeField] private float maxShootDelay = 0.07f;
-
+    [SerializeField] private LayerMask layerMask;
     [SerializeField] private AudioClip shootingSound;
     private AudioSource audioSource;
     private float shootDelay;
@@ -67,6 +67,10 @@ public class PlayerManager : MonoBehaviour
         set
         {
             currentHP = value;
+            if (currentHP <= 0)
+            {
+                currentHP = 0;
+            }
             OnHPChange?.Invoke(currentHP);
         }
     }
@@ -205,7 +209,7 @@ public class PlayerManager : MonoBehaviour
         Transform camTransform = mainCam.transform;
         RaycastHit hit;
 
-        if (Physics.Raycast(camTransform.position, camTransform.forward, out hit, Mathf.Infinity))
+        if (Physics.Raycast(camTransform.position, camTransform.forward, out hit, Mathf.Infinity, layerMask))
         {
             targetPos = hit.point;
             aimObject.transform.position = hit.point;
@@ -311,7 +315,11 @@ public class PlayerManager : MonoBehaviour
     }
     private void CheckAimCollision()
     {
-        if (Vector3.Distance(spawnPos.position, targetPos) < 0.8f)
+        Vector3 rayDir;
+        rayDir = targetPos - spawnPos.position;
+        float distance = Vector3.Distance(spawnPos.position, targetPos);
+
+        if (distance < 0.8f)
         {
             if (!isAimCollision)
             {
@@ -325,5 +333,10 @@ public class PlayerManager : MonoBehaviour
         {
             isAimCollision = false;
         }
+    }
+    public void TakeDamage(int damage)
+    {
+        Debug.Log(damage);
+        CurrentHP -= damage;
     }
 }

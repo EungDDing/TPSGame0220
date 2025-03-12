@@ -57,6 +57,7 @@ public class EnemyAI : MonoBehaviour
             }
             else
             {
+                enemy.StopAttack();
                 SetTargetPos(mainTarget.transform.position);
             }
             yield return new WaitForSeconds(1.0f);

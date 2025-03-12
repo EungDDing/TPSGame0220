@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.AI;
 public class Enemy : MonoBehaviour
 {
+    [SerializeField] private LayerMask layerMask;
     private NavMeshAgent agent;
     private Animator animator;
 
@@ -12,25 +13,29 @@ public class Enemy : MonoBehaviour
     private int animHash_Fire = Animator.StringToHash("IsFire");
     private int animHash_Die = Animator.StringToHash("IsDie");
 
-    private GameObject player;
+    private GameObject playerObject;
+    private PlayerManager player;
 
     private EnemyAI enemyAI;
 
     private int maxHP = 100;
     public int currentHP;
     private bool isDie;
-    private float damage = 3;
+    private int damage = 3;
     public delegate void OnChangeHP(int hp);
     public event OnChangeHP ChangeHP;
     public delegate void EnemyDie();
     public event EnemyDie OnEnemyDie;
 
+    RaycastHit hit;
     public int CurrentHP
     {
         get => currentHP;
         set
         {
             currentHP = value;
+            if (currentHP <= 0)
+                currentHP = 0;
             Debug.Log(currentHP);
             ChangeHP?.Invoke(currentHP);
         }
@@ -38,7 +43,8 @@ public class Enemy : MonoBehaviour
     private void Awake()
     {
         isDie = false;
-        player = GameObject.Find("Player");
+        playerObject = GameObject.Find("Player");
+        playerObject.TryGetComponent<PlayerManager>(out player);
         TryGetComponent<NavMeshAgent>(out agent);
         transform.TryGetComponent<Animator>(out animator);
         TryGetComponent<EnemyAI>(out enemyAI);
@@ -61,6 +67,11 @@ public class Enemy : MonoBehaviour
     {
         agent.isStopped = true;
         animator.SetTrigger(animHash_Fire);
+        StartCoroutine("AttackPlayer");
+    }
+    public void StopAttack()
+    {
+        StopCoroutine("AttackPlayer");
     }
     public void InitEnemy()
     {
@@ -71,13 +82,15 @@ public class Enemy : MonoBehaviour
 
         enemyAI.StartAI();
     }
-    public bool CheckEnemyDie()
+    public void TakeDamage(int damage)
     {
-        if (currentHP == 0)
+        Debug.Log(damage);
+        CurrentHP -= damage;
+        if (CurrentHP == 0 && !isDie)
         {
             isDie = true;
+            OnEnemyDie?.Invoke();
         }
-        return isDie;
     }
     public void EnemyIsDead()
     {
@@ -89,6 +102,22 @@ public class Enemy : MonoBehaviour
     IEnumerator DestroyEnemy(float time)
     {
         yield return new WaitForSeconds(time);
-        Destroy(gameObject);
+        animator.enabled = false;
+        Destroy(gameObject, 2.0f);
+    }
+    IEnumerator AttackPlayer()
+    {
+        while (true)
+        {
+            Vector3 ray = playerObject.transform.position - transform.position;
+            if (Physics.Raycast(transform.position, ray, out hit, 10.0f, layerMask))
+            {
+                if (hit.collider.CompareTag("player"))
+                {
+                    player.TakeDamage(damage);
+                }
+            }
+            yield return new WaitForSeconds(0.5f);
+        }
     }
 }

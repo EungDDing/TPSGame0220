@@ -68,7 +68,7 @@ public class Bullet : MonoBehaviour
         if (other.CompareTag("Enemy"))
         {
             other.TryGetComponent<Enemy>(out enemy);
-            enemy.CurrentHP -= bulletDamage;
+            enemy.TakeDamage(bulletDamage);
         }
         DestoryBullet();
     }

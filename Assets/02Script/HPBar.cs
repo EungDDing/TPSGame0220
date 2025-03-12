@@ -18,6 +18,7 @@ public class HPBar : MonoBehaviour
         obj = GameObject.FindWithTag("Player");
         player = obj.transform;
         enemy.ChangeHP += FillAmountBar;
+        enemy.OnEnemyDie += SetDisable;
     }
     private void Update()
     {
@@ -28,5 +29,9 @@ public class HPBar : MonoBehaviour
     private void FillAmountBar(int hp)
     {
         hpBar.fillAmount = hp / maxHP;
+    }
+    private void SetDisable()
+    {
+        gameObject.SetActive(false);
     }
 }
