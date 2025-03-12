@@ -6,9 +6,11 @@ using UnityEngine.AI;
 public class Enemy : MonoBehaviour
 {
     [SerializeField] private LayerMask layerMask;
+    [SerializeField] private Transform firePos;
     private NavMeshAgent agent;
     private Animator animator;
 
+    private Vector3 shootOffset = Vector3.zero;
     private int animHash_Run = Animator.StringToHash("IsRun");
     private int animHash_Fire = Animator.StringToHash("IsFire");
     private int animHash_Die = Animator.StringToHash("IsDie");
@@ -67,11 +69,27 @@ public class Enemy : MonoBehaviour
     {
         agent.isStopped = true;
         animator.SetTrigger(animHash_Fire);
-        StartCoroutine("AttackPlayer");
+
+        shootOffset.x = Random.Range(-0.5f, 0.5f);
+        shootOffset.y = 0.0f;
+        shootOffset.z = Random.Range(-0.5f, 0.5f);
+
+        Vector3 ray = (playerObject.transform.GetChild(1).position + shootOffset) - firePos.position;
+
+        Debug.DrawLine(firePos.position, playerObject.transform.GetChild(1).position + shootOffset, Color.red, 0.5f);
+        if (Physics.Raycast(firePos.position, ray, out hit, 10.0f, layerMask))
+        {
+            Debug.Log("Fire");
+            
+            if (hit.collider.CompareTag("Player"))
+            {
+                Debug.Log("Hit");
+                player.TakeDamage(damage);
+            }
+        }
     }
     public void StopAttack()
     {
-        StopCoroutine("AttackPlayer");
     }
     public void InitEnemy()
     {
@@ -104,20 +122,5 @@ public class Enemy : MonoBehaviour
         yield return new WaitForSeconds(time);
         animator.enabled = false;
         Destroy(gameObject, 2.0f);
-    }
-    IEnumerator AttackPlayer()
-    {
-        while (true)
-        {
-            Vector3 ray = playerObject.transform.position - transform.position;
-            if (Physics.Raycast(transform.position, ray, out hit, 10.0f, layerMask))
-            {
-                if (hit.collider.CompareTag("player"))
-                {
-                    player.TakeDamage(damage);
-                }
-            }
-            yield return new WaitForSeconds(0.5f);
-        }
     }
 }

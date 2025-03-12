@@ -69,7 +69,7 @@ public class EnemyAI : MonoBehaviour
         agent.isStopped = true;
         while (true)
         {
-            yield return new WaitForSeconds(0.1f);
+            yield return new WaitForSeconds(0.2f);
 
             if (mainTarget != null && GetDistanceToTarget() < 10.0f)
             {
