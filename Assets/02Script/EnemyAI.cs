@@ -24,6 +24,7 @@ public class EnemyAI : MonoBehaviour
         TryGetComponent<NavMeshAgent>(out agent);
         TryGetComponent<Enemy>(out enemy);
         state = Enemy_State.Idle;
+        enemy.OnEnemyDie += SetDie;
     }
     public void StartAI()
     {
@@ -72,6 +73,7 @@ public class EnemyAI : MonoBehaviour
             if (mainTarget != null && GetDistanceToTarget() < 10.0f)
             {
                 transform.LookAt(mainTarget.transform);
+                transform.rotation *= Quaternion.Euler(0.0f, 40.0f, 0.0f);
                 enemy.AttackTarget();
             }
             else
@@ -83,6 +85,12 @@ public class EnemyAI : MonoBehaviour
     }
     IEnumerator Die()
     {
+        if (state == Enemy_State.Die)
+        {
+            enemy.EnemyIsDead();
+            state = Enemy_State.Die;
+        }
+  
         yield return new WaitForSeconds(1.0f);
     }
     private float GetDistanceToTarget()
@@ -107,5 +115,10 @@ public class EnemyAI : MonoBehaviour
             newTarget = hit.position;
             agent.SetDestination(newTarget);
         }
+    }
+    private void SetDie()
+    {
+        state = Enemy_State.Die;
+        ChangeState(state);
     }
 }

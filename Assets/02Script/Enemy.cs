@@ -10,6 +10,7 @@ public class Enemy : MonoBehaviour
 
     private int animHash_Run = Animator.StringToHash("IsRun");
     private int animHash_Fire = Animator.StringToHash("IsFire");
+    private int animHash_Die = Animator.StringToHash("IsDie");
 
     private GameObject player;
 
@@ -17,10 +18,13 @@ public class Enemy : MonoBehaviour
 
     private int maxHP = 100;
     public int currentHP;
-
+    private bool isDie;
     private float damage = 3;
     public delegate void OnChangeHP(int hp);
     public event OnChangeHP ChangeHP;
+    public delegate void EnemyDie();
+    public event EnemyDie OnEnemyDie;
+
     public int CurrentHP
     {
         get => currentHP;
@@ -33,15 +37,11 @@ public class Enemy : MonoBehaviour
     }
     private void Awake()
     {
+        isDie = false;
         player = GameObject.Find("Player");
         TryGetComponent<NavMeshAgent>(out agent);
         transform.TryGetComponent<Animator>(out animator);
         TryGetComponent<EnemyAI>(out enemyAI);
-        
-        if (enemyAI != null)
-        {
-            enemyAI.StartAI();
-        }
     }
     private void Update()
     {
@@ -68,5 +68,27 @@ public class Enemy : MonoBehaviour
         agent.stoppingDistance = 10.0f;
         gameObject.layer = LayerMask.NameToLayer("Enemy");
         InitEnemyHP();
+
+        enemyAI.StartAI();
+    }
+    public bool CheckEnemyDie()
+    {
+        if (currentHP == 0)
+        {
+            isDie = true;
+        }
+        return isDie;
+    }
+    public void EnemyIsDead()
+    {
+        agent.isStopped = true;
+        animator.SetTrigger(animHash_Die);
+        float deathTime = 2.3f;
+        StartCoroutine(DestroyEnemy(deathTime));
+    }
+    IEnumerator DestroyEnemy(float time)
+    {
+        yield return new WaitForSeconds(time);
+        Destroy(gameObject);
     }
 }

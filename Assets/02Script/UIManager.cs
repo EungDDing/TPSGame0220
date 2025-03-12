@@ -11,6 +11,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI bulletCount;
     [SerializeField] private TextMeshProUGUI hasBulletCount;
     [SerializeField] private Image missionClear;
+    [SerializeField] private TextMeshProUGUI hpText;
     private GameObject obj;
     private PlayerManager playerManager;
     private EndPortal endPortal;
@@ -31,7 +32,7 @@ public class UIManager : MonoBehaviour
         playerManager.OnAimingChange += SetAimState;
         playerManager.OnCurBulletCountChange += ChangeCurBulletCount;
         playerManager.OnHasBulletCountChange += ChangeHasBulletCount;
-
+        playerManager.OnHPChange += HPChange;
         endPortal.OnEnterPortal += ActiveMissionClear;
     }
     void Update()
@@ -60,5 +61,9 @@ public class UIManager : MonoBehaviour
     private void ActiveMissionClear()
     {
         missionClear.gameObject.SetActive(true);
+    }
+    private void HPChange(int currentHP)
+    {
+        hpText.text = currentHP.ToString();
     }
 }

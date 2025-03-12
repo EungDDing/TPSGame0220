@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Animations.Rigging;
 
 public class PlayerManager : MonoBehaviour
 {
@@ -45,16 +46,30 @@ public class PlayerManager : MonoBehaviour
     private float disableAimTime = 0.0f;
     private float disableTime = 1.5f;
 
+    private int currentHP;
+    private int maxHP = 300;
+
     public delegate void IsAimingChange(bool isAiming);
     public event IsAimingChange OnAimingChange;
     public delegate void BulletCountChange(int bulletCount);
     public event BulletCountChange OnCurBulletCountChange;
     public event BulletCountChange OnHasBulletCountChange;
+    public delegate void HPChange(int hp);
+    public event HPChange OnHPChange;
     public float MoveSpeed
     {
         get => moveSpeed;
     }
 
+    public int CurrentHP
+    {
+        get => currentHP;
+        set
+        {
+            currentHP = value;
+            OnHPChange?.Invoke(currentHP);
+        }
+    }
     private void Awake()
     {
         isAimingMove = false;
@@ -82,6 +97,7 @@ public class PlayerManager : MonoBehaviour
 
         shootDelay = 0.0f;
         InitBullet();
+        InitHP();
     }
     private void Update()
     {
@@ -279,6 +295,10 @@ public class PlayerManager : MonoBehaviour
         
         OnHasBulletCountChange?.Invoke(hasBullet);
         OnCurBulletCountChange?.Invoke(currentBullet);
+    }
+    private void InitHP()
+    {
+        CurrentHP = maxHP;
     }
     private void PlayWeaponSound(AudioClip sound)
     {
