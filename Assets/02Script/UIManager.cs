@@ -8,6 +8,7 @@ using TMPro;
 public class UIManager : MonoBehaviour
 {
     [SerializeField] private Image aimImage;
+    [SerializeField] private Image normalImage;
     [SerializeField] private TextMeshProUGUI bulletCount;
     [SerializeField] private TextMeshProUGUI hasBulletCount;
     [SerializeField] private Image missionClear;
@@ -46,9 +47,15 @@ public class UIManager : MonoBehaviour
     private void ChangeAimImageActive()
     {
         if (isAim)
+        {
+            normalImage.gameObject.SetActive(false);
             aimImage.gameObject.SetActive(true);
+        }
         else
+        {
+            normalImage.gameObject.SetActive(true);
             aimImage.gameObject.SetActive(false);
+        }
     }
     private void ChangeCurBulletCount(int count)
     {

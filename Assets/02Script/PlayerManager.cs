@@ -25,11 +25,14 @@ public class PlayerManager : MonoBehaviour
     [SerializeField] private GameObject bullet;
     [SerializeField] private Transform spawnPos;
     [SerializeField] private float maxShootDelay = 0.07f;
-    [SerializeField] private LayerMask layerMask;
+    [SerializeField] private LayerMask layerMask1;
+    [SerializeField] private LayerMask layerMask2;
     [SerializeField] private AudioClip shootingSound;
+    [SerializeField] private GameObject enemyPrefab;
+    private Enemy enemy;
     private AudioSource audioSource;
     private float shootDelay;
-    private int hasBullet = 120;
+    private int hasBullet = 150;
     private int maxBullet = 30;
     private int currentBullet = 0;
 
@@ -46,9 +49,12 @@ public class PlayerManager : MonoBehaviour
     private float disableAimTime = 0.0f;
     private float disableTime = 1.5f;
 
+    private LineRenderer lineRenderer;
+    public float lineTime =  0.3f;
+
     private int currentHP;
     private int maxHP = 300;
-
+    private int damage = 10;
     public delegate void IsAimingChange(bool isAiming);
     public event IsAimingChange OnAimingChange;
     public delegate void BulletCountChange(int bulletCount);
@@ -99,6 +105,8 @@ public class PlayerManager : MonoBehaviour
         TryGetComponent<AudioSource>(out audioSource);
         spine = animator.GetBoneTransform(HumanBodyBones.Spine);
 
+        TryGetComponent<LineRenderer>(out lineRenderer);
+        enemyPrefab.TryGetComponent<Enemy>(out enemy);
         shootDelay = 0.0f;
         InitBullet();
         InitHP();
@@ -116,6 +124,9 @@ public class PlayerManager : MonoBehaviour
         CheckAimCollision();
         
         PlayerAim();
+
+        GetAmmo();
+        TakeHeal();
 
         if (isMove)
         {
@@ -209,7 +220,7 @@ public class PlayerManager : MonoBehaviour
         Transform camTransform = mainCam.transform;
         RaycastHit hit;
 
-        if (Physics.Raycast(camTransform.position, camTransform.forward, out hit, Mathf.Infinity, layerMask))
+        if (Physics.Raycast(camTransform.position, camTransform.forward, out hit, Mathf.Infinity, layerMask1))
         {
             targetPos = hit.point;
             aimObject.transform.position = hit.point;
@@ -225,6 +236,8 @@ public class PlayerManager : MonoBehaviour
         aimDir = (targetAim - transform.position).normalized;
 
         transform.forward = aimDir;
+
+        CheckIsEmpty();
 
         if (Input.GetMouseButton(0) && !isEmpty)
         {
@@ -253,11 +266,38 @@ public class PlayerManager : MonoBehaviour
 
         if (hasBullet == 0 && currentBullet == 0)
             isEmpty = true;
-
+        else
+            isEmpty = false;
         shootDelay = 0;
         // Instantiate(bullet, spawnPos.position, Quaternion.identity);
-        PoolManager.instance.FireBullet(spawnPos.position, aimObject.transform.position, gameObject, 10, 10.0f);
+        // PoolManager.instance.FireBullet(spawnPos.position, aimObject.transform.position, gameObject, 10, 10.0f);
+        Vector3 rayDir = (targetPos - spawnPos.position);
+        Debug.DrawRay(spawnPos.position, rayDir, Color.red, 0.5f);
+        if (Physics.Raycast(spawnPos.position, rayDir, out RaycastHit hit, 15.0f, layerMask2))
+        {
+            if (hit.collider.CompareTag("EnemyHitbox"))
+            {
+                // StartCoroutine(ShowLine(hit.point));
+                Enemy enemy = hit.collider.GetComponentInParent<Enemy>();
+                enemy.TakeDamage(damage);
+                Debug.Log(hit.point);
+            }
+            else
+            {
+                // StartCoroutine(ShowLine(spawnPos.position + rayDir.normalized * 15.0f));
+            }
+        }
     }
+    /*private IEnumerator ShowLine(Vector3 hitPosition)
+    {
+        Debug.Log("코루틴 시작");
+        lineRenderer.SetPosition(0, spawnPos.position);
+        lineRenderer.SetPosition(1, hitPosition);
+        lineRenderer.enabled = true;
+        yield return new WaitForSeconds(lineTime);
+        lineRenderer.enabled = false;
+
+    }*/
     private IEnumerator Reload()
     {
         isReload = true;
@@ -341,6 +381,41 @@ public class PlayerManager : MonoBehaviour
     }
     public void GetAmmo()
     {
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            if (Physics.Raycast(mainCam.transform.position, mainCam.transform.forward, out RaycastHit hit, 10.0f))
+            {
 
+                if (hit.collider.CompareTag("Ammobox"))
+                {
+                    Debug.Log("Ammo Get");
+                    hasBullet = 150;
+                    OnHasBulletCountChange?.Invoke(hasBullet);
+                }
+            }
+        }
+    }
+    public void TakeHeal()
+    {
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            if (Physics.Raycast(mainCam.transform.position, mainCam.transform.forward, out RaycastHit hit, 10.0f))
+            {
+
+                if (hit.collider.CompareTag("HealBox"))
+                {
+                    Debug.Log("Take Heal");
+                    currentHP = 300;
+                    OnHPChange?.Invoke(currentHP);
+                }
+            }
+        }
+    }
+    private void CheckIsEmpty()
+    {
+        if (hasBullet == 0 && currentBullet == 0)
+            isEmpty = true;
+        else
+            isEmpty = false;
     }
 }

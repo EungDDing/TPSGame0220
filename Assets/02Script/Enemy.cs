@@ -101,7 +101,8 @@ public class Enemy : MonoBehaviour
         agent.stoppingDistance = 15.0f;
         gameObject.layer = LayerMask.NameToLayer("Enemy");
         InitEnemyHP();
-
+        Debug.Log("√ ±‚»≠");
+        Debug.Log(currentHP);
         enemyAI.StartAI();
     }
     public void TakeDamage(int damage)

@@ -20,8 +20,5 @@ public class EnemySpawn : MonoBehaviour
 
         enemy = newEnemy.GetComponent<Enemy>();
         enemy.InitEnemy();
-
-        Debug.Log($"[Enemy »ý¼º] {enemy.name} (ID: {enemy.GetInstanceID()})");
-        enemy.InitEnemy();
     }
 }

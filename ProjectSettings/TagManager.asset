@@ -9,6 +9,8 @@ TagManager:
   - Cover
   - Architecture
   - EnemyHitbox
+  - Ammobox
+  - HealBox
   layers:
   - Default
   - TransparentFX
